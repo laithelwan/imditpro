@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Imdit</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    
+</head>
+<body>
+
+<!-- ===== FLOATING EMOJIS ===== -->
+<div class="floating-emojis">
+    <span>🤖</span>
+    <span>📸</span>
+    <span>🎨</span>
+    <span>🧠</span>
+    <span>✨</span>
+    <span>🖌️</span>
+</div>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+    <h1>Imdit</h1>
+    <p>منصة ذكية لتحليل الصور قبل تعديلها</p>
+</header>
+
+<!-- ===== UPLOAD ===== -->
+<section class="upload-card">
+
+    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+        {% csrf_token %}
+
+        <label for="imageInput" class="upload-box">
+            <div class="icon">📷</div>
+            <strong>اختر صورة</strong>
+            <span>PNG / JPG</span>
+        </label>
+
+        <input
+            type="file"
+            name="image"
+            id="imageInput"
+            accept="image/*"
+            hidden
+            required
+        >
+    </form>
+
+</section>
+
+<!-- ===== PREVIEW (قبل التحليل فقط) ===== -->
+<section id="previewSection" class="result-section" style="display:none">
+    <h2>الصورة المختارة</h2>
+    <img id="previewImage" class="uploaded-image">
+</section>
+
+<!-- ===== AI LASER LOADER ===== -->
+<div id="aiLoader" class="ai-loader">
+    <div class="scan-card">
+        <div class="fake-image">
+            <div class="laser-line"></div>
+
+            <!-- 🌌 الكرات الزرقاء -->
+            <span class="magic-dot" style="top:10%; left:20%;"></span>
+            <span class="magic-dot" style="top:40%; left:70%;"></span>
+            <span class="magic-dot" style="top:80%; left:30%;"></span>
+            <span class="magic-dot" style="top:60%; left:50%;"></span>
+            <span class="magic-dot" style="top:20%; left:80%;"></span>
+        </div>
+
+        <h2>🤖 تحليل ذكي للصورة</h2>
+        <p id="loaderText">جاري تحليل الصورة...</p>
+    </div>
+</div>
+
+
+
+<!-- ===== AI RESULT ===== -->
+{% if image_url %}
+<section class="result-section">
+
+    <img src="{{ image_url }}" class="uploaded-image">
+
+    <div class="ai-description">
+        <h3>🧠 وصف الذكاء الصناعي</h3>
+        <p id="aiText" style="color:white;">{{ description }}</p>
+
+    </div>
+
+    <a href="{% url 'edit' %}" class="edit-btn">
+        🎨 الانتقال لصفحة التعديل
+    </a>
+
+</section>
+{% endif %}
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+    <div class="footer-item" id="contactBtn">
+        تواصل معنا
+        <div class="contact-list">
+            <a href="https://t.me/prc_laith"  class="fab fa-telegram"style="color:#0088cc;">Telegram</a>
+            <a href="https://github.com/laithelwan" class="fab fa-github" style="color:#333;">GitHub</a>
+            <a href="https://www.instagram.com/prc_laith?igsh=MTY5OWNicXlqb3Y4dg=="  class="fab fa-instagram"style="color:#e1306c;">Instagram</a>
+            <a href="https://www.facebook.com/share/1KNCaMk5Sy/" class="fab fa-facebook" style="color:#1877f2;">Facebook</a>
+        </div>
+    </div>
+
+    <div class="footer-item">
+        أعمالنا
+        <div class="footer-content special">قريباً...</div>
+    </div>
+
+    <div class="footer-item">
+        المطورون
+        <div class="footer-content">ليث علوان<br>جميل زقزق<br>محمد ترمان<br>عبد الله زعزع<br>محمد ابو الصوف<br>حذيفة سماق</div>
+    </div>
+
+    <div class="footer-item">
+        © 2025 Imdit
+    </div>
+</footer>
+
+
+
+
+<!-- ===== JS ===== -->
+<script src="{% static 'js/home.js' %}"></script>
+
+</body>
+</html>

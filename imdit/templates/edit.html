@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>Imdit | تعديل الصورة</title>
+    <link rel="stylesheet" href="{% static 'css/edit.css' %}">
+</head>
+<body>
+
+<header class="top-bar">
+    <h2>🎨 Imdit Editor</h2>
+    <a href="/" class="back">⬅ رجوع</a>
+</header>
+
+<main class="editor">
+
+    <!-- منطقة الصورة -->
+    <section class="canvas-area">
+        <canvas id="canvas"></canvas>
+    </section>
+
+    <!-- الأدوات -->
+    <aside class="tools">
+
+            <h3>الفلاتر</h3>
+    
+        <button onclick="applyPreset('modern')">✨ عصري</button>
+        <button onclick="applyPreset('autumn')">🍂 خريفي</button>
+        <button onclick="applyPreset('negative')">🖤 نيجاتيف</button>
+        <button onclick="applyPreset('sepia')">📸 سيبيا</button>
+        <hr>
+
+
+        <label>🔆 السطوع</label>
+        <input type="range" min="0" max="200" value="100" oninput="brightness(this.value)">
+
+        <label>🌈 التشبع</label>
+        <input type="range" min="0" max="200" value="100" oninput="saturation(this.value)">
+
+        <label>🎚️ التباين</label>
+        <input type="range" min="0" max="200" value="100" oninput="contrast(this.value)">
+
+        <label>📏 تكبير / تصغير</label>
+        <input type="range" min="50" max="150" value="100" oninput="scaleImg(this.value)">
+
+        <hr>
+
+        <button class="danger" onclick="resetImage()">↩ إعادة للأصل</button>
+        <button class="success" onclick="shareImage()">📤 مشاركة الصورة</button>
+        <button id="downloadBtn">تنزيل الصورة</button>
+        <canvas id="canva"></canvas>
+    </aside>
+
+</main>
+
+<script src="{% static 'js/edit.js' %}"></script>
+</body>
+</html>

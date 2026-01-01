@@ -1,0 +1,1 @@
+web: gunicorn imdit.wsgi:application
