@@ -1,20 +1,5 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-
-# Django
-db.sqlite3
-*.log
-media/
-
-# Virtual Environment
 venv/
+__pycache__/
+*.pyc
+db.sqlite3
 .env
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Static collected
-staticfiles/
