@@ -17,9 +17,10 @@ def home(request):
 
         # وصف الصورة عبر API (أو رسالة تجريبية)
         try:
-            description = describe_image(image_path)
-        except Exception:
-            description = "تم رفع الصورة بنجاح ✅"
+         description = describe_image(image_path)
+        except Exception as e:
+         description = f"❌ فشل تحليل الصورة: {e}"
+
 
     return render(request, 'home.html', {
         'image_url': image_url,
