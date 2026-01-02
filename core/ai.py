@@ -1,7 +1,7 @@
 import os
 import requests
 
-API_URL = "https://router.huggingface.co/hf-inference/models/Salesforce/blip-image-captioning-base"
+API_URL = "https://router.huggingface.co/hf-inference/models/Salesforce/blip-image-captioning-large"
 
 def describe_image(image_path):
     hf_token = os.getenv("HF_API_TOKEN")
@@ -10,8 +10,10 @@ def describe_image(image_path):
         raise Exception("HF_API_TOKEN غير موجود في متغيرات البيئة")
 
     headers = {
-        "Authorization": f"Bearer {hf_token}"
-    }
+    "Authorization": f"Bearer {hf_token}",
+    "Accept": "application/json"
+}
+
 
     with open(image_path, "rb") as f:
         image_bytes = f.read()
