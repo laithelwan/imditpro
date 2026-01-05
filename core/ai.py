@@ -1,18 +1,19 @@
 import os
 import requests
 
-HF_API_TOKEN = os.getenv("HF_API_TOKEN")
+API_URL = "https://router.huggingface.co/hf-inference/models/Salesforce/blip-image-captioning-large"
 
-API_URL = "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-large"
+def describe_image(image_path):
+    hf_token = os.getenv("HF_API_TOKEN")
 
-headers = {
-    "Authorization": f"Bearer {HF_API_TOKEN}",
+    if not hf_token:
+        raise Exception("HF_API_TOKEN غير موجود في متغيرات البيئة")
+
+    headers = {
+    "Authorization": f"Bearer {hf_token}",
     "Accept": "application/json"
 }
 
-def describe_image(image_path):
-    if not HF_API_TOKEN:
-        raise Exception("HF_API_TOKEN غير موجود")
 
     with open(image_path, "rb") as f:
         image_bytes = f.read()
@@ -21,15 +22,18 @@ def describe_image(image_path):
         API_URL,
         headers=headers,
         data=image_bytes,
-        timeout=120
+        timeout=60
     )
 
+    # 🔍 لو رجع HTML أو خطأ
     if response.status_code != 200:
-        raise Exception(f"HF error {response.status_code}: {response.text}")
+        raise Exception(
+            f"HF error {response.status_code}: {response.text[:300]}"
+        )
 
     result = response.json()
 
-    if isinstance(result, list) and "generated_text" in result[0]:
+    if isinstance(result, list) and result and "generated_text" in result[0]:
         return result[0]["generated_text"]
 
     return "لم يتم توليد وصف للصورة"

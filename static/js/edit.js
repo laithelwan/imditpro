@@ -1,144 +1,243 @@
-// =================== Canvas setup ===================
+/* ===== CANVAS ===== */
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const img = new Image();
+const originalImage = new Image(); // الصورة الأصلية الحقيقية
 
-// قيم التحكم
-let brightnessVal = 100;
-let contrastVal = 100;
-let saturationVal = 100;
-let scaleVal = 100;
-let sepiaVal = 0;
-let invertVal = 0;
+const baseImage = new Image();    // الصورة المثبتة
+const previewImage = new Image(); // المعاينة
 
-// تحميل الصورة من الصفحة الأولى (localStorage)
-const savedImage = localStorage.getItem("imdit_image");
-if (savedImage) {
-    img.src = savedImage;
-} else {
-    alert("لم يتم العثور على صورة");
-}
+/* ===== VALUES (فلتر مؤقت) ===== */
+let b = 100, c = 100, s = 100, sep = 0, inv = 0, hue = 0;
 
-// عند تحميل الصورة
-img.onload = function () {
-    canvas.width = img.width;
-    canvas.height = img.height;
-    drawImage();
+/* ===== FILTERS ===== */
+const FILTERS = [
+ {name:"Original",b:100,c:100,s:100,sep:0,inv:0},
+ {name:"Clarendon",b:110,c:130,s:140,sep:0,inv:0},
+ {name:"Juno",b:105,c:120,s:140,sep:10,inv:0},
+ {name:"Valencia",b:110,c:110,s:120,sep:30,inv:0},
+ {name:"X-Pro",b:100,c:150,s:130,sep:20,inv:0},
+ {name:"Moon",b:110,c:120,s:0,sep:0,inv:0},
+ {name:"Gingham",b:105,c:90,s:80,sep:10,inv:0},
+ {name:"Amaro",b:120,c:110,s:130,sep:10,inv:0},
+ {name:"Sepia",b:100,c:100,s:100,sep:100,inv:0},
+ {name:"Negative",b:100,c:100,s:100,sep:0,inv:100}
+];
+
+/* ===== LOAD IMAGE ===== */
+originalImage.src = localStorage.getItem("imdit_image");
+
+originalImage.onload = () => {
+    canvas.width = originalImage.width;
+    canvas.height = originalImage.height;
+
+    baseImage.src = originalImage.src;
+    previewImage.src = originalImage.src;
 };
 
-// =================== رسم الصورة ===================
-function drawImage() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.filter = `
-        brightness(${brightnessVal}%)
-        contrast(${contrastVal}%)
-        saturate(${saturationVal}%)
-        sepia(${sepiaVal}%)
-        invert(${invertVal}%)
-    `;
+previewImage.onload = () => {
+ draw();
+ generateFilters();
+};
 
-    const scale = scaleVal / 100;
-    const w = img.width * scale;
-    const h = img.height * scale;
-
-    ctx.drawImage(
-        img,
-        (canvas.width - w) / 2,
-        (canvas.height - h) / 2,
-        w,
-        h
-    );
+/* ===== DRAW ===== */
+function draw(){
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.filter = `
+  brightness(${b}%)
+  contrast(${c}%)
+  saturate(${s}%)
+  sepia(${sep}%)
+  invert(${inv}%)
+  hue-rotate(${hue}deg)
+ `;
+ ctx.drawImage(previewImage,0,0,canvas.width,canvas.height);
 }
 
-// =================== السلايدرز ===================
-function brightness(val) {
-    brightnessVal = val;
-    drawImage();
+/* ===== PANELS ===== */
+const filtersBtn = document.getElementById("filtersBtn");
+const adjustBtn  = document.getElementById("adjustBtn");
+const cropBtn    = document.getElementById("cropBtn");
+
+const filtersPanel = document.getElementById("filtersPanel");
+const adjustPanel  = document.getElementById("adjustPanel");
+const cropPanel    = document.getElementById("cropPanel");
+
+filtersBtn.onclick = () => toggle(filtersPanel);
+adjustBtn.onclick  = () => toggle(adjustPanel);
+cropBtn.onclick    = () => toggle(cropPanel);
+
+function toggle(panel){
+ filtersPanel.classList.add("hidden");
+ adjustPanel.classList.add("hidden");
+ cropPanel.classList.add("hidden");
+ panel.classList.toggle("hidden");
 }
 
-function contrast(val) {
-    contrastVal = val;
-    drawImage();
-}
+/* ===== CLOSE ON OUTSIDE CLICK ===== */
+document.addEventListener("click", (e) => {
+ const inside =
+  e.target.closest("#filtersPanel") ||
+  e.target.closest("#adjustPanel") ||
+  e.target.closest("#cropPanel");
 
-function saturation(val) {
-    saturationVal = val;
-    drawImage();
-}
+ const tool =
+  e.target.closest("#filtersBtn") ||
+  e.target.closest("#adjustBtn") ||
+  e.target.closest("#cropBtn");
 
-function scaleImg(val) {
-    scaleVal = val;
-    drawImage();
-}
-
-// =================== الفلاتر الجاهزة ===================
-function applyPreset(type) {
-    sepiaVal = 0;
-    invertVal = 0;
-
-    if (type === "modern") {
-        brightnessVal = 110;
-        contrastVal = 120;
-        saturationVal = 130;
-    }
-    if (type === "autumn") {
-        brightnessVal = 105;
-        contrastVal = 115;
-        saturationVal = 120;
-        sepiaVal = 40;
-    }
-    if (type === "negative") {
-        invertVal = 100;
-    }
-    if (type === "sepia") {
-        sepiaVal = 100;
-    }
-
-    drawImage();
-}
-
-// =================== إعادة ضبط ===================
-function resetImage() {
-    brightnessVal = 100;
-    contrastVal = 100;
-    saturationVal = 100;
-    scaleVal = 100;
-    sepiaVal = 0;
-    invertVal = 0;
-    drawImage();
-}
-
-// =================== مشاركة / تنزيل ===================
-function shareImage() {
-    canvas.toBlob(async (blob) => {
-        const file = new File([blob], "imdit-image.png", { type: "image/png" });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            try {
-                await navigator.share({
-                    title: "Imdit Image",
-                    text: "تم تعديل هذه الصورة باستخدام Imdit",
-                    files: [file],
-                });
-            } catch (err) {
-                console.log("تم إلغاء المشاركة");
-            }
-        } else {
-            const link = document.createElement("a");
-            link.download = "imdit-image.png";
-            link.href = URL.createObjectURL(blob);
-            link.click();
-        }
-    }, "image/png");
-}
-
-document.getElementById("downloadBtn").addEventListener("click", () => {
-    canvas.toBlob((blob) => {
-        const link = document.createElement("a");
-        link.download = "imdit-image.png";
-        link.href = URL.createObjectURL(blob);
-        link.click();
-    }, "image/png");
+ if (!inside && !tool) {
+  filtersPanel.classList.add("hidden");
+  adjustPanel.classList.add("hidden");
+  cropPanel.classList.add("hidden");
+ }
 });
 
+/* ===== FILTER GRID ===== */
+function generateFilters(){
+ const grid = document.querySelector(".filters-grid");
+ grid.innerHTML = "";
+
+ FILTERS.forEach(f=>{
+  const item = document.createElement("div");
+  item.className = "filter-item";
+
+  const c2 = document.createElement("canvas");
+  c2.width = 150; c2.height = 150;
+  const x = c2.getContext("2d");
+
+  x.filter = `
+   brightness(${f.b}%)
+   contrast(${f.c}%)
+   saturate(${f.s}%)
+   sepia(${f.sep}%)
+   invert(${f.inv}%)
+  `;
+  const source =
+    f.name === "Original"
+        ? originalImage
+        : previewImage;
+
+x.drawImage(source, 0, 0, 150, 150);
+
+  item.innerHTML = `<div class="filter-name">${f.name}</div>`;
+  item.prepend(c2);
+
+ item.onclick = () => {
+
+if (f.name === "Original") {
+    previewImage.src = originalImage.src;
+
+    b = c = s = 100;
+    sep = inv = hue = 0;
+
+    previewImage.onload = () => {
+        draw();
+        generateFilters(); // 🔥 تحديث النماذج
+    };
+}
+ else {
+     b=f.b; c=f.c; s=f.s; sep=f.sep; inv=f.inv;
+     draw();
+ }
+};
+
+
+  grid.appendChild(item);
+ });
+}
+
+/* ===== SLIDERS ===== */
+function setBrightness(v){ b=v; draw(); }
+function setContrast(v){ c=v; draw(); }
+function setSaturation(v){ s=v; draw(); }
+function setWarmth(v){ sep=v/4; draw(); }
+function setHue(v){ hue=v; draw(); }
+
+/* ===== SAVE FILTER (تثبيت) ===== */
+document.getElementById("saveFilterBtn").onclick = () => {
+
+ ctx.filter = `
+  brightness(${b}%)
+  contrast(${c}%)
+  saturate(${s}%)
+  sepia(${sep}%)
+  invert(${inv}%)
+  hue-rotate(${hue}deg)
+ `;
+ ctx.drawImage(previewImage,0,0,canvas.width,canvas.height);
+
+ const data = canvas.toDataURL();
+ baseImage.src = data;
+ previewImage.src = data;
+previewImage.onload = () => {
+    draw();
+    generateFilters();
+};
+
+ // نبدأ فلتر جديد فوقه
+ b = c = s = 100;
+ sep = inv = hue = 0;
+};
+
+/* ===== RESET (فلتر مؤقت فقط) ===== */
+function resetImage(){
+ b=c=s=100; sep=inv=hue=0;
+ draw();
+}
+
+/* ===== DOWNLOAD ===== */
+document.getElementById("downloadBtn").onclick = () => {
+ canvas.toBlob(blob=>{
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "imdit.png";
+  a.click();
+ });
+};
+
+/* ===== THEME ===== */
+const themeBtn = document.getElementById("themeBtn");
+themeBtn.onclick = () => {
+ const html = document.documentElement;
+ const dark = html.dataset.theme === "dark";
+ html.dataset.theme = dark ? "light" : "dark";
+ themeBtn.innerHTML = dark
+  ? '<i class="fa-solid fa-sun"></i>'
+  : '<i class="fa-solid fa-moon"></i>';
+};
+
+/* ===== CROP ===== */
+function cropImage(ratio){
+ const w = baseImage.width;
+ const h = baseImage.height;
+
+ let nw = w;
+ let nh = w / ratio;
+ if (nh > h) {
+  nh = h;
+  nw = h * ratio;
+ }
+
+ const x = (w - nw) / 2;
+ const y = (h - nh) / 2;
+
+ const temp = document.createElement("canvas");
+ temp.width = nw;
+ temp.height = nh;
+ temp.getContext("2d")
+  .drawImage(baseImage, x, y, nw, nh, 0, 0, nw, nh);
+
+ const data = temp.toDataURL();
+ baseImage.src = data;
+ previewImage.src = data;
+ previewImage.onload = () => {
+    draw();
+    generateFilters();
+};
+
+}
+
+function cropFree(){
+ alert("✂️ القص الحر بالسحب – المرحلة القادمة");
+}

@@ -1,58 +1,108 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <title>Imdit | تعديل الصورة</title>
-    <link rel="stylesheet" href="{% static 'css/edit.css' %}">
+<meta charset="UTF-8">
+<title>Imdit Editor</title>
+
+<link rel="stylesheet"
+ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/edit.css' %}">
 </head>
+
 <body>
 
 <header class="top-bar">
-    <h2>🎨 Imdit Editor</h2>
-    <a href="/" class="back">⬅ رجوع</a>
+    <h2>🎨 Imdit</h2>
+
+    <div class="header-actions">
+        <button class="icon-btn" id="themeBtn" title="الوضع الليلي / النهاري">
+            <i class="fa-solid fa-moon"></i>
+        </button>
+        <a href="/" class="back"><i class="fa-solid fa-arrow-left"></i></a>
+    </div>
 </header>
 
 <main class="editor">
 
-    <!-- منطقة الصورة -->
-    <section class="canvas-area">
-        <canvas id="canvas"></canvas>
-    </section>
+<section class="canvas-area">
+    <canvas id="canvas"></canvas>
+</section>
 
-    <!-- الأدوات -->
-    <aside class="tools">
+<aside class="tools">
 
-            <h3>الفلاتر</h3>
-    
-        <button onclick="applyPreset('modern')">✨ عصري</button>
-        <button onclick="applyPreset('autumn')">🍂 خريفي</button>
-        <button onclick="applyPreset('negative')">🖤 نيجاتيف</button>
-        <button onclick="applyPreset('sepia')">📸 سيبيا</button>
-        <hr>
+<div class="icon-group">
+    <button class="icon-btn" id="filtersBtn" title="الفلاتر">
+        <i class="fa-solid fa-filter"></i>
+    </button>
 
+    <button class="icon-btn" id="adjustBtn" title="الضبط">
+        <i class="fa-solid fa-sliders"></i>
+    </button>
 
-        <label>🔆 السطوع</label>
-        <input type="range" min="0" max="200" value="100" oninput="brightness(this.value)">
+    <button class="icon-btn" id="cropBtn" title="قص الصورة">
+        <i class="fa-solid fa-crop"></i>
+    </button>
 
-        <label>🌈 التشبع</label>
-        <input type="range" min="0" max="200" value="100" oninput="saturation(this.value)">
+    <button class="icon-btn danger" onclick="resetImage()" title="إعادة ضبط">
+        <i class="fa-solid fa-rotate-left"></i>
+    </button>
+</div>
 
-        <label>🎚️ التباين</label>
-        <input type="range" min="0" max="200" value="100" oninput="contrast(this.value)">
+<div class="bottom-actions">
+    <button class="icon-btn success" onclick="shareImage()">
+        <i class="fa-solid fa-share-nodes"></i>
+    </button>
+    <button class="icon-btn success" id="downloadBtn">
+        <i class="fa-solid fa-download"></i>
+    </button>
+</div>
 
-        <label>📏 تكبير / تصغير</label>
-        <input type="range" min="50" max="150" value="100" oninput="scaleImg(this.value)">
-
-        <hr>
-
-        <button class="danger" onclick="resetImage()">↩ إعادة للأصل</button>
-        <button class="success" onclick="shareImage()">📤 مشاركة الصورة</button>
-        <button id="downloadBtn">تنزيل الصورة</button>
-        <canvas id="canva"></canvas>
-    </aside>
-
+</aside>
 </main>
+
+<!-- ===== Panels ===== -->
+
+<div id="filtersPanel" class="panel hidden">
+    <h3>🎨 الفلاتر</h3>
+    <div class="filters-grid"></div>
+    <button id="saveFilterBtn" class="save-filter-btn">
+ 💾 حفظ الفلتر
+</button>
+
+<h4>الفلاتر المحفوظة</h4>
+<div class="saved-filters-grid"></div>
+
+</div>
+
+<div id="adjustPanel" class="panel hidden">
+    <h3>🎚️ الضبط</h3>
+
+    <label>السطوع</label>
+    <input type="range" min="0" max="200" value="100" oninput="setBrightness(this.value)">
+
+    <label>التباين</label>
+    <input type="range" min="0" max="200" value="100" oninput="setContrast(this.value)">
+
+    <label>التشبع</label>
+    <input type="range" min="0" max="200" value="100" oninput="setSaturation(this.value)">
+
+    <label>الدفء</label>
+    <input type="range" min="0" max="200" value="100" oninput="setWarmth(this.value)">
+
+    <label>Hue</label>
+    <input type="range" min="0" max="360" value="0" oninput="setHue(this.value)">
+</div>
+
+<div id="cropPanel" class="panel hidden">
+    <h3>✂️ قص الصورة</h3>
+
+    <button onclick="cropImage(1)">📸 مربع (إنستغرام)</button>
+    <button onclick="cropImage(4/5)">📘 فيسبوك</button>
+    <button onclick="cropImage(9/16)">📱 ستوري / هاتف</button>
+    <button onclick="cropImage(1)">💬 واتس (شخصية)</button>
+    <button onclick="cropFree()">✋ قص حر</button>
+</div>
 
 <script src="{% static 'js/edit.js' %}"></script>
 </body>
