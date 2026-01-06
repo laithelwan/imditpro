@@ -45,10 +45,14 @@ canvas {
 
 .icon-group {
     display: flex;
-    gap: 12px;
+    flex-direction: column; /* هذا يجعل العناصر فوق بعض */
+    gap: 50px; /* مسافة بين كل زر وآخر */
 }
 
 .icon-btn {
+    display: flex;        /* لجعل الأيقونة والنص صفًا واحدًا */
+    gap: 50px;             /* مسافة بين الأيقونة والنص */
+    align-items: center;  /* محاذاة عمودية وسطية */
     width: 50px;
     height: 50px;
     background: #1e293b;
@@ -208,4 +212,135 @@ html[data-theme="light"] .save-filter-btn {
 
 html[data-theme="dark"] .save-filter-btn {
     background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+.hidden {
+  display: none;
+}
+
+#filterPanel {
+  position: absolute;
+  background: #222;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+}
+/* ================================
+   COLOR FILTER ICON
+================================ */
+#filterIcon {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+#filterIcon:hover {
+    background: #60a5fa;
+    color: #020617;
+}
+
+
+
+/* ================================
+   COLOR FILTER PANEL
+================================ */
+#filterPanel {
+    /* لوحة فلتر الألوان – أعلى اليمين */
+
+    position: fixed;
+    top: 90px;        /* نفس مستوى باقي الـ panels */
+    right: 20px;
+
+    width: 280px;
+    max-height: 70vh;
+
+    background: var(--bg-panel);
+    color: var(--text);
+
+    border-radius: 16px;
+    padding: 15px;
+    overflow-y: auto;
+
+    border: 1px solid #1e293b;
+    box-shadow: 0 20px 45px rgba(0,0,0,.45);
+
+    z-index: 999;
+}
+
+
+
+/* عنوان اللوحة */
+#filterPanel h3 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    text-align: center;
+}
+
+/* ================================
+   COLOR BUTTONS
+================================ */
+#filterPanel button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 8px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: var(--btn);
+    color: var(--text);
+
+    font-size: 14px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+#filterPanel button:hover {
+    filter: brightness(1.2);
+    transform: scale(1.03);
+}
+
+/* أزرار الألوان */
+#filterPanel button:nth-child(2) { background:#789dec; } /* أزرق */
+#filterPanel button:nth-child(3) { background:#ea6f6f; } /* أحمر */
+#filterPanel button:nth-child(4) { background:#5cdf8c; } /* أخضر */
+#filterPanel button:nth-child(5) { background:#ebc965; color:#020617; } /* أصفر */
+#filterPanel button:nth-child(6) { background:#e48951; } /* بني */
+
+/* ================================
+   ACTION BUTTONS
+================================ */
+#filterPanel button:nth-last-child(2) {
+    background:#475569;
+}
+.bottom-actions {
+  display: flex;
+  gap: 30px; /* مسافة بين الأزرار */
+  justify-content: center;
+}
+
+.icon-wrapper {
+  display: flex;
+  flex-direction: column; /* النص فوق الزر */
+  align-items: center;
+}
+
+.icon-label {
+  margin-bottom: 10px; /* مسافة بين النص والزر */
+  font-size: 0.9rem;
+  color: inherit; /* يورث اللون الحالي */
+  text-align: center;
+}
+
+#filterPanel button:last-child {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    font-weight: 600;
+}
+
+/* ================================
+   DARK / LIGHT SUPPORT
+================================ */
+html[data-theme="light"] #filterIcon {
+    box-shadow: 0 10px 25px rgba(37,99,235,.35);
+}
+
+html[data-theme="light"] #filterPanel {
+    border-color:#d6cbb8;
 }

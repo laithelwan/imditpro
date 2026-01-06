@@ -182,8 +182,25 @@ previewImage.onload = () => {
 
 /* ===== RESET (فلتر مؤقت فقط) ===== */
 function resetImage(){
- b=c=s=100; sep=inv=hue=0;
- draw();
+   // إعادة القيم الافتراضية للفلاتر
+   b = c = s = 100;
+    sep = inv = hue = 0;
+
+    // إعادة الصورة إلى الأصلية
+    previewImage.src = originalImage.src;
+    baseImage.src = originalImage.src;
+
+    // مسح فلتر الألوان
+    keepColors = [];
+    imageHistory = [];
+
+    // إعادة رسم
+    previewImage.onload = () => {
+        canvas.width = previewImage.width;
+        canvas.height = previewImage.height;
+        draw();
+        generateFilters();
+    };
 }
 
 /* ===== DOWNLOAD ===== */
@@ -195,6 +212,40 @@ document.getElementById("downloadBtn").onclick = () => {
   a.click();
  });
 };
+function shareImage() {
+    const canvas = document.getElementById("canvas");
+
+    if (!canvas) {
+        alert("لا توجد صورة للمشاركة");
+        return;
+    }
+
+    canvas.toBlob(blob => {
+        const file = new File([blob], "edited-image.png", {
+            type: "image/png"
+        });
+
+        // إذا المتصفح يدعم المشاركة
+        if (navigator.share) {
+            navigator.share({
+                title: "صورة معدلة",
+                text: "شوف الصورة اللي عدلتها ✨",
+                files: [file]
+            }).catch(err => {
+                console.log("فشل المشاركة:", err);
+            });
+        } else {
+            // حل بديل: تحميل الصورة
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "edited-image.png";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    });
+}
+
 
 /* ===== THEME ===== */
 const themeBtn = document.getElementById("themeBtn");
@@ -208,6 +259,13 @@ themeBtn.onclick = () => {
 };
 
 /* ===== CROP ===== */
+let isCropping = false;
+let cropStartX = null;
+let cropStartY = null;
+let cropEndX = null;
+let cropEndY = null;
+let cropRatio = null; // null = حر، أو رقم مثل 1, 16/9
+
 function cropImage(ratio){
  const w = baseImage.width;
  const h = baseImage.height;
@@ -238,6 +296,194 @@ function cropImage(ratio){
 
 }
 
-function cropFree(){
- alert("✂️ القص الحر بالسحب – المرحلة القادمة");
+function cropFree(ratio = null){
+  isCropping = true;
+  canvas.style.cursor = "crosshair";
+  cropRatio = ratio; // null = قص حر، أو رقم = نسبة
+}
+
+/* ===============================
+   COLOR KEEP FILTER (ADD-ON ONLY)
+   =============================== */
+
+/* حالة الألوان */
+let keepColors = [];
+let imageHistory = []; // تخزين الحالات
+
+
+/* فتح / إغلاق لوحة الألوان */
+document.getElementById("filterIcon").onclick = () => {
+  document.getElementById("filterPanel").classList.toggle("hidden");
+
+  // أول مرة نخزن الصورة
+   if (imageHistory.length === 0) {
+    imageHistory.push(
+      ctx.getImageData(0, 0, canvas.width, canvas.height)
+    );
+  }
+};
+/* اختيار لون */
+function toggleColor(color) {
+  if (keepColors.includes(color)) {
+    keepColors = keepColors.filter(c => c !== color);
+  } else {
+    keepColors.push(color);
+  }
+
+  applyKeepFilter();
+}
+
+
+/* رجوع آخر لون */
+function undoColor() {
+  if (imageHistory.length <= 1) return;
+
+  imageHistory.pop(); // إزالة آخر حالة
+  const prev = imageHistory[imageHistory.length - 1];
+  ctx.putImageData(prev, 0, 0);
+}
+
+
+/* تطبيق الفلتر */
+function applyKeepFilter() {
+  if (imageHistory.length === 0) return;
+
+  const base = imageHistory[0]; // 🔥 دائمًا من البداية
+
+  const img = new ImageData(
+    new Uint8ClampedArray(base.data),
+    base.width,
+    base.height
+  );
+
+  for (let i = 0; i < img.data.length; i += 4) {
+    const r = img.data[i];
+    const g = img.data[i + 1];
+    const b = img.data[i + 2];
+
+    let keep = false;
+
+    if (keepColors.includes("red") && r > 150 && r > g && r > b) keep = true;
+    if (keepColors.includes("green") && g > 150 && g > r && g > b) keep = true;
+    if (keepColors.includes("blue") && b > 150 && b > r && b > g) keep = true;
+    if (keepColors.includes("yellow") && r > 150 && g > 150 && b < 120) keep = true;
+    if (keepColors.includes("brown") && r > g && g > b && r < 160) keep = true;
+
+    if (!keep) {
+      const gray = (r + g + b) / 3;
+      img.data[i] = gray;
+      img.data[i + 1] = gray;
+      img.data[i + 2] = gray;
+    }
+  }
+
+  ctx.putImageData(img, 0, 0);
+
+  // نحفظ الحالة للرجوع
+  imageHistory.push(
+    ctx.getImageData(0, 0, canvas.width, canvas.height)
+  );
+}
+
+
+/* حفظ الفلتر */
+function saveFilter() {
+  const data = canvas.toDataURL();
+  baseImage.src = data;
+  previewImage.src = data;
+
+  previewImage.onload = () => {
+    draw();
+    generateFilters();
+  };
+
+  keepColors = [];
+  imageHistory = [];
+  document.getElementById("filterPanel").classList.add("hidden");
+}
+canvas.addEventListener("mousedown", (e) => {
+  if (!isCropping) return;
+  const rect = canvas.getBoundingClientRect();
+  cropStartX = e.clientX - rect.left;
+  cropStartY = e.clientY - rect.top;
+});
+
+canvas.addEventListener("mousemove", (e) => {
+  if (!isCropping || cropStartX === null) return;
+
+  const rect = canvas.getBoundingClientRect();
+  cropEndX = e.clientX - rect.left;
+  cropEndY = e.clientY - rect.top;
+
+  // تطبيق نسبة محددة
+  if (cropRatio) {
+    const w = Math.abs(cropEndX - cropStartX);
+    const h = w / cropRatio;
+    if (cropEndY > cropStartY) cropEndY = cropStartY + h;
+    else cropEndY = cropStartY - h;
+  }
+
+  draw();
+  drawCropRect();
+});
+
+canvas.addEventListener("mouseup", () => {
+  if (!isCropping) return;
+
+  isCropping = false;
+  canvas.style.cursor = "default";
+  document.body.style.cursor = "default";
+  canvas.style.cursor = "default";
+
+  applyFreeCrop();
+});
+function drawCropRect() {
+  if (cropStartX === null || cropEndX === null) return;
+
+  const x = Math.min(cropStartX, cropEndX);
+  const y = Math.min(cropStartY, cropEndY);
+  const w = Math.abs(cropEndX - cropStartX);
+  const h = Math.abs(cropEndY - cropStartY);
+
+  ctx.save();
+  ctx.strokeStyle = "red";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 4]);
+  ctx.strokeRect(x, y, w, h);
+  ctx.restore();
+}
+function applyFreeCrop() {
+  if (cropStartX === null || cropEndX === null) return;
+
+  const x = Math.min(cropStartX, cropEndX);
+  const y = Math.min(cropStartY, cropEndY);
+  const w = Math.abs(cropEndX - cropStartX);
+  const h = Math.abs(cropEndY - cropStartY);
+
+  if (w < 10 || h < 10) return; // حماية من القص الصغير جدًا
+
+  const temp = document.createElement("canvas");
+  temp.width = w;
+  temp.height = h;
+
+  temp.getContext("2d").drawImage(
+    canvas,
+    x, y, w, h,
+    0, 0, w, h
+  );
+
+  const data = temp.toDataURL();
+  baseImage.src = data;
+  previewImage.src = data;
+
+  previewImage.onload = () => {
+    canvas.width = previewImage.width;
+    canvas.height = previewImage.height;
+    draw();
+    generateFilters();
+  };
+
+  // إعادة تعيين
+  cropStartX = cropStartY = cropEndX = cropEndY = null;
+  cropRatio = null;
 }

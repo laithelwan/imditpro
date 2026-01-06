@@ -34,28 +34,44 @@
 <div class="icon-group">
     <button class="icon-btn" id="filtersBtn" title="الفلاتر">
         <i class="fa-solid fa-filter"></i>
+        <span class="icon-label">الفلاتر</span>
     </button>
 
     <button class="icon-btn" id="adjustBtn" title="الضبط">
         <i class="fa-solid fa-sliders"></i>
+        <span class="icon-label">الضبط</span>
     </button>
 
     <button class="icon-btn" id="cropBtn" title="قص الصورة">
         <i class="fa-solid fa-crop"></i>
+        <span class="icon-label">قص الصورة</span>
     </button>
 
     <button class="icon-btn danger" onclick="resetImage()" title="إعادة ضبط">
         <i class="fa-solid fa-rotate-left"></i>
+        <span class="icon-label">ارجاع للاصل </span>
     </button>
+    <button class="icon-btn" id="filterIcon" title="فلتر الألوان">
+    <i class="fa-solid fa-palette"></i>
+    <span class="icon-label">فلتر الألوان</span>
+</button>
+
 </div>
 
 <div class="bottom-actions">
+  <div class="icon-wrapper">
+    <span class="icon-label">مشاركة الصورة</span>
     <button class="icon-btn success" onclick="shareImage()">
         <i class="fa-solid fa-share-nodes"></i>
     </button>
+  </div>
+
+  <div class="icon-wrapper">
+    <span class="icon-label">تحميل الصورة</span>
     <button class="icon-btn success" id="downloadBtn">
         <i class="fa-solid fa-download"></i>
     </button>
+  </div>
 </div>
 
 </aside>
@@ -97,13 +113,32 @@
 <div id="cropPanel" class="panel hidden">
     <h3>✂️ قص الصورة</h3>
 
-    <button onclick="cropImage(1)">📸 مربع (إنستغرام)</button>
-    <button onclick="cropImage(4/5)">📘 فيسبوك</button>
-    <button onclick="cropImage(9/16)">📱 ستوري / هاتف</button>
-    <button onclick="cropImage(1)">💬 واتس (شخصية)</button>
-    <button onclick="cropFree()">✋ قص حر</button>
+    <div id="cropRatioButtons">
+  <button onclick="cropImage(1)">1:1</button>
+  <button onclick="cropImage(4/5)">4:5</button>
+  <button onclick="cropImage(16/9)">16:9</button>
+  <button onclick="cropFree()">قص حر</button>
 </div>
+
+</div>
+
+<div id="filterPanel" class="hidden">
+  <h3>اختر الألوان</h3>
+
+  <button onclick="toggleColor('blue')">أزرق</button>
+  <button onclick="toggleColor('red')">أحمر</button>
+  <button onclick="toggleColor('green')">أخضر</button>
+  <button onclick="toggleColor('yellow')">أصفر</button>
+  <button onclick="toggleColor('brown')">بني</button>
+
+  <br><br>
+  <button onclick="undoColor()">↩ رجوع</button>
+  <button onclick="saveFilter()">💾 حفظ</button>
+</div>
+
+<canvas id="canvas"></canvas>
 
 <script src="{% static 'js/edit.js' %}"></script>
 </body>
 </html>
+
